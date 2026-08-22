@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Hide scrollbars on modern browsers */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@media print {
+  header,
+  #director-chatbot-drawer,
+  #btn-screening-start,
+  #btn-bulk-render,
+  #btn-toggle-ai-chat,
+  #btn-add-shot-scene-0,
+  #btn-add-shot-scene-1,
+  #btn-add-shot-scene-2 {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .bg-zinc-900,
+  .bg-zinc-950 {
+    background: white !important;
+    color: black !important;
+    border-color: #ccc !important;
+  }
+
+  .text-zinc-100,
+  .text-zinc-200,
+  .text-zinc-300,
+  .text-zinc-400 {
+    color: black !important;
+  }
+
+  .text-amber-400,
+  .text-amber-300 {
+    color: #b45309 !important;
+  }
+}

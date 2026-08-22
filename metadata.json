@@ -1,0 +1,6 @@
+{
+  "name": "CineBoard AI - Script Storyboard Generator",
+  "description": "Transform film scripts and screenplays into visual storyboard shot sequences with customizable 1K/2K/4K resolution and an AI Director assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

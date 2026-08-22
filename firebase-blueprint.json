@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "description": "The user email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the creator"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["userId", "email", "createdAt", "updatedAt"]
+    },
+    "StoryboardProject": {
+      "title": "StoryboardProject",
+      "description": "Saved cinematic storyboard project containing scenes and generated shots",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique storyboard project ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the user who owns this project"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the screenplay or storyboard",
+          "maxLength": 300
+        },
+        "logline": {
+          "type": "string",
+          "description": "Logline summary of the sequence",
+          "maxLength": 2000
+        },
+        "stylePreset": {
+          "type": "string",
+          "description": "Visual aesthetic preset identifier",
+          "maxLength": 100
+        },
+        "defaultImageSize": {
+          "type": "string",
+          "description": "Default render resolution (1K, 2K, 4K)",
+          "maxLength": 20
+        },
+        "defaultAspectRatio": {
+          "type": "string",
+          "description": "Default aspect ratio (16:9, 4:3, 1:1, 9:16)",
+          "maxLength": 20
+        },
+        "rawScript": {
+          "type": "string",
+          "description": "Original raw script text",
+          "maxLength": 100000
+        },
+        "scenes": {
+          "type": "array",
+          "description": "Scenes with decomposed storyboard shots"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["id", "userId", "title", "stylePreset", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profile document accessible only by the owner"
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/StoryboardProject" },
+      "description": "Collection of storyboard projects owned and managed by users"
+    }
+  }
+}
