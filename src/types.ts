@@ -1,73 +1,37 @@
-export type ImageResolution = "1K" | "2K" | "4K" | "512px";
-export type AspectRatio = "16:9" | "4:3" | "1:1" | "9:16";
-
-export interface StoryboardShot {
+export interface DentalCase {
   id: string;
-  shotNumber: number;
-  shotType: string;
-  cameraMovement: string;
-  lens: string;
-  visualDescription: string;
-  lightingAtmosphere: string;
-  dialogueAudio?: string;
-  directorNotes?: string;
-  imagePrompt: string;
-  imageUrl?: string;
-  isGenerating?: boolean;
-  error?: string;
-  imageSize?: ImageResolution;
-  aspectRatio?: AspectRatio;
-  modelUsed?: string;
+  patientName: string;
+  patientAge: number;
+  condition: string;
+  treatmentPlan: string;
+  status: "active" | "completed" | "scheduled";
+  lastVisit: string;
+  notes: string;
 }
 
-export interface StoryboardScene {
-  sceneNumber: number;
-  heading: string;
-  location?: string;
-  timeOfDay?: string;
-  summary?: string;
-  shots: StoryboardShot[];
-}
-
-export interface UserProfile {
-  userId: string;
-  email: string;
-  displayName?: string;
-  photoURL?: string;
-  createdAt?: any;
-  updatedAt?: any;
-}
-
-export interface StoryboardProject {
-  id?: string;
-  userId?: string;
+export interface DentalDocument {
+  id: string;
   title: string;
-  logline: string;
-  scenes: StoryboardScene[];
-  stylePreset: string;
-  defaultImageSize: ImageResolution;
-  defaultAspectRatio: AspectRatio;
-  rawScript?: string;
-  createdAt?: any;
-  updatedAt?: any;
+  category: "PDF" | "MP4" | "PPT" | "DOCX";
+  accentColor: string;
+  description: string;
+  size: string;
+  dateAdded: string;
 }
 
-export type ChatRoleType = "director" | "cinematographer" | "fast_assistant";
+export interface DentalNewsItem {
+  id: string;
+  title: string;
+  source: string;
+  date: string;
+  summary: string;
+  category: "أبحاث" | "مؤتمرات" | "تقنيات";
+}
 
 export interface ChatMessage {
   id: string;
-  role: "user" | "model";
+  sender: "doctor" | "ai";
   text: string;
   timestamp: string;
-  modelUsed?: string;
-  roleType?: ChatRoleType;
-}
-
-export interface StylePresetOption {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  badgeColor: string;
-  promptModifier: string;
+  isSimulated?: boolean;
 }

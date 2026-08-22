@@ -1,6 +1,6 @@
 {
-  "name": "CineBoard AI - Script Storyboard Generator",
-  "description": "Transform film scripts and screenplays into visual storyboard shot sequences with customizable 1K/2K/4K resolution and an AI Director assistant.",
-  "requestFramePermissions": [],
+  "name": "My Rose Dental - روز دينتال",
+  "description": "منظومة طب وجراحة الفم والأسنان الذكية ثلاثية الأبعاد للدكتور مالك مع المساعد الطبي Gemini AI والمكتبة السريرية والسجلات.",
+  "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
