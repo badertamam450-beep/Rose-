@@ -18,7 +18,6 @@ class MyRoseDentalApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'Roboto',
         scaffoldBackgroundColor: const Color(0xFFF5F7FA),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF00E5FF),
@@ -54,7 +53,6 @@ class _MainScreenState extends State<MainScreen> {
   bool _isLoadingAi = false;
   String? _lastAiResponse;
 
-  // الألوان البراقة الخاصة بهوية My Rose Dental
   static const Color electricCyan = Color(0xFF00E5FF);
   static const Color vibrantRose = Color(0xFFFF4081);
   static const Color emeraldGreen = Color(0xFF00C853);
@@ -208,19 +206,12 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. شريط العنوان (Header - The Neural Crown)
               _buildHeader(),
               const SizedBox(height: 16),
-
-              // 2. قسم الترحيب والذكاء الاصطناعي (AI Welcome Hub)
               _buildWelcomeCard(),
               const SizedBox(height: 20),
-
-              // 3. لوحة التحكم السريعة - الأعمدة الأربعة (The Pillars)
               _buildPillarsGrid(),
               const SizedBox(height: 24),
-
-              // 4. قسم أحدث المستندات والفيديوهات (Updated Library)
               _buildMediaSection(),
               const SizedBox(height: 20),
             ],
@@ -231,7 +222,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // 1. الهيدر وشعار الوردة الكريستالية
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -254,11 +244,11 @@ class _MainScreenState extends State<MainScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'My Rose Dental',
+                'روز دينتال - My Rose Dental',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: darkSlate),
               ),
               Text(
-                'روز دينتال - المنظومة الذكية',
+                'المنظومة الطبية الذكية لدكتور مالك',
                 style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
               ),
             ],
@@ -286,7 +276,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // 2. بطاقة الترحيب وهولوجرام الذكاء الاصطناعي
   Widget _buildWelcomeCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -310,7 +299,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'مساعدك الذكي جاهز لأي استشارة طبيّة',
+            'مساعدك الذكي جاهز لأي استشارة طبية',
             style: TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 18),
@@ -363,7 +352,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // 3. الأعمدة المعمارية الأربعة
   Widget _buildPillarsGrid() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -374,7 +362,7 @@ class _MainScreenState extends State<MainScreen> {
           color: electricCyan,
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('فتح المكتبة الرقمية الطبية...')),
+              const SnackBar(content: Text('فتح المكتبة الرقمية الطبية (PDF, DOCX, PPT)...')),
             );
           },
         ),
@@ -400,7 +388,7 @@ class _MainScreenState extends State<MainScreen> {
           color: metallicGold,
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('فتح سجلات وملفات الحالات...')),
+              const SnackBar(content: Text('فتح سجلات وملفات المرضى...')),
             );
           },
         ),
@@ -461,7 +449,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // 4. قسم المستندات والوسائط
   Widget _buildMediaSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,7 +538,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // 5. شريط التنقل السفلي المنحني
   Widget _buildBottomNav() {
     return Container(
       decoration: BoxDecoration(
