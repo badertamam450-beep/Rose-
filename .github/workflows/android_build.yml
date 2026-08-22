@@ -1,0 +1,58 @@
+name: Build Android App (Rose)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # يتيح لك تشغيل البناء يدوياً من زر Run Workflow
+
+jobs:
+  build:
+    name: Build APK & Bundle
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. سحب كود المشروع من المستودع
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. إعداد بيئة Java / JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # 3. فك تشفير google-services.json ووضعه في مسار تطبيق الأندرويد
+      - name: Decode google-services.json
+        run: |
+          mkdir -p app
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > app/google-services.json
+          echo "✅ google-services.json has been generated successfully."
+
+      # 4. إعطاء صلاحية التنفيذ لملف gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 5. بناء تطبيق الأندرويد بصيغة APK (Debug / Release)
+      - name: Build Android APK with Gradle
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          PROJECT_NUMBER: ${{ secrets.PROJECT_NUMBER }}
+          DATABASE_ID: ${{ secrets.DATABASE_ID }}
+          ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          TOKEN_ROSE: ${{ secrets.TOKEN_ROSE }}
+          MROSE_APP_ORGANIZATION_YEMEN_ID: ${{ secrets.MROSE_APP_ORGANIZATION_YEMEN_ID }}
+        run: |
+          ./gradlew assembleDebug --stacktrace
+
+      # 6. رفع ملف الـ APK الناتج كـ Artifact لتحميله مباشرة
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rose-App-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
