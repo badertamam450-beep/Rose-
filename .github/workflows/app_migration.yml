@@ -1,8 +1,6 @@
 name: Install DR MALEK ALROMIMAH DENTAL UI
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -14,48 +12,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install new interface
-        run: |
-          cp lib/main_v2.dart lib/main.dart
-          rm lib/main_v2.dart
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/main.dart lib/services/web_services.dart lib/services/dental_ai_service.dart pubspec.yaml
-          git add -A
-          git diff --cached --quiet || git commit -m "feat: make DR MALEK ALROMIMAH DENTAL the real app interface"
-          git push
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: gradle
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
-
-      - name: Build real release APK
-        env:
-          GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: flutter build apk --release --dart-define="GEMINI_API_KEY=$GEMINI_KEY"
-
-      - name: Verify APK
-        run: test -s build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: dr-malek-alromimah-dental-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
+      - name: Check migrated interface
+        run: test -f lib/main.dart && grep -q "DR MALEK ALROMIMAH DENTAL" lib/main.dart
