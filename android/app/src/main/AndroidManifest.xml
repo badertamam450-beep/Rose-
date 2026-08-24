@@ -1,11 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dental_app">
 
-    <!-- صلاحيات الاتصال بالشبكة والإنترنت دون انقطاع -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-
-    <!-- صلاحيات الوصول وتخزين الملفات والميديا لجميع الإصدارات -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
@@ -15,13 +12,13 @@
     <application
         android:label="My Rose Dental"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
         android:usesCleartextTraffic="true">
 
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
