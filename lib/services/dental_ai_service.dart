@@ -2,31 +2,34 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 
 class DentalAiService {
   static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY');
-  late final GenerativeModel? _model;
+  GenerativeModel? _model;
+  ChatSession? _chat;
 
   DentalAiService() {
     if (_apiKey.isNotEmpty) {
       _model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: _apiKey,
         systemInstruction: Content.system(
-          'أنت مساعد طبي متخصص ومحترف في طب وجراحة الفم والأسنان للدكتور مالك في تطبيق My Rose Dental، تجيب بدقة ومهنية علمية واستشارات سريرية وتشخيصات فارقة وخطط علاج فورية وموثوقة.'
+          'أنت Gemini AI داخل تطبيق DR MALEK ALROMIMAH DENTAL. أجب بالعربية افتراضياً، وبأسلوب علمي واضح. ساعد طبيب الأسنان في البحث والتفكير السريري والتعليم، واذكر حدود المعلومات وضرورة الرجوع للمراجع والبروتوكولات الرسمية عند القرارات العلاجية.',
         ),
       );
-    } else {
-      _model = null;
+      _chat = _model!.startChat();
     }
   }
 
+  bool get isConnected => _model != null;
+
   Future<String?> askDentalQuestion(String prompt) async {
-    if (_model == null) {
-      return 'مرحباً دكتور مالك.\nبناءً على استشارتك: "$prompt"\n\n- التشخيص السريري المقترح: تقييم سريري وشعاعي دقيق (CBCT) مع فحص الأنسجة حول السنية.\n- الخطة العلاجية المقترحة: متابعة بروتوكول التخدير الموضعي وتطبيق المعالجة التحفظية/الجراحية وفق المعايير الطبية المعتمدة.\n- ملاحظة: عند تفعيل مفتاح GEMINI_API_KEY ستحصل على تحليل مدعوم حياً بالذكاء الاصطناعي.';
+    if (prompt.trim().isEmpty) return 'اكتب سؤالك أولاً.';
+    if (_chat == null) {
+      return 'لم يتم تفعيل اتصال Gemini بعد. أضف GEMINI_API_KEY إلى GitHub Secrets ثم أعد بناء APK.';
     }
     try {
-      final response = await _model!.generateContent([Content.text(prompt)]);
-      return response.text ?? 'لم يتم استلام نص من المساعد الطبي.';
+      final response = await _chat!.sendMessage(Content.text(prompt.trim()));
+      return response.text ?? 'لم يصل نص من Gemini.';
     } catch (e) {
-      return 'حدث خطأ أثناء معالجة الاستشارة: $e';
+      return 'تعذر الاتصال بـ Gemini حالياً. تحقق من الإنترنت ومفتاح API.\n$e';
     }
   }
 }
