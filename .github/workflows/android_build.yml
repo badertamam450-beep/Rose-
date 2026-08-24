@@ -34,47 +34,16 @@ jobs:
             echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
           fi
 
-      - name: Ensure Modern Gradle Configuration
-        run: |
-          cat << 'EOF' > android/settings.gradle
-pluginManagement {
-    def flutterSdkPath = {
-        def properties = new Properties()
-        def localPropertiesFile = file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
-        }
-        def flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
-        return flutterSdkPath
-    }()
-
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-plugins {
-    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    id "com.android.application" version "8.7.0" apply false
-    id "org.jetbrains.kotlin.android" version "2.0.20" apply false
-}
-
-include ":app"
-EOF
-          echo "android/settings.gradle verified and configured for Flutter modern Gradle"
-
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build Release APK
         env:
           GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: flutter build apk --release --dart-define=GEMINI_API_KEY=$GEMINI_KEY
+        run: flutter build apk --release --dart-define="GEMINI_API_KEY=$GEMINI_KEY"
+
+      - name: Verify APK
+        run: test -f build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
