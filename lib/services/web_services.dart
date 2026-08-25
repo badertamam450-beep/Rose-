@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,6 +20,8 @@ class LibraryItem {
 }
 
 class WebServices {
+  static const MethodChannel _torChannel = MethodChannel('dr_malek/tor');
+
   Future<void> openUrl(String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
@@ -30,8 +33,8 @@ class WebServices {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  // Deep Web: searches sources that are not normally surfaced by a plain
-  // Google query, while staying on the public web (PubMed/WHO/FDI/Scholar).
+  // Deep Web: searches public academic and institutional sources that are
+  // commonly missed by a plain web query (PubMed/WHO/FDI/Scholar).
   Future<void> openDeepWebSearch(String query) async {
     final q = query.trim().isEmpty ? 'dentistry oral health' : query.trim();
     final encoded = Uri.encodeQueryComponent(q);
@@ -41,13 +44,19 @@ class WebServices {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  // Dark Web: use Ahmia, a real public search engine that indexes publicly
-  // accessible Tor (.onion) services. The app does not implement a Tor proxy
-  // itself; opening an .onion result requires a Tor-capable browser.
-  Future<void> openDarkWebSearch(String query) async {
+  // Dark Web: send the search to Ahmia and explicitly request the installed
+  // Tor Browser on Android. This does not embed Tor or bypass Tor Browser's
+  // security model; .onion results are handled by the Tor Browser itself.
+  Future<bool> openDarkWebSearch(String query) async {
     final q = query.trim().isEmpty ? 'dentistry' : query.trim();
     final uri = Uri.https('ahmia.fi', '/search/', {'q': q});
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final openedInTor = await _torChannel.invokeMethod<bool>('openTorBrowser', {'url': uri.toString()});
+      if (openedInTor == true) return true;
+    } on PlatformException {
+      // Non-Android or an unavailable Tor Browser: fall back to the normal browser.
+    } catch (_) {}
+    return launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Future<DateTime?> fetchGoogleUtc() async {
