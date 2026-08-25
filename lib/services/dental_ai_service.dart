@@ -8,10 +8,12 @@ class DentalAiService {
   DentalAiService() {
     if (_apiKey.isNotEmpty) {
       _model = GenerativeModel(
-        model: 'gemini-2.5-flash',
+        // gemini-2.5-flash was the model shown in the previous APK error.
+        // Gemini 3.6 Flash is the current stable replacement.
+        model: 'gemini-3.6-flash',
         apiKey: _apiKey,
         systemInstruction: Content.system(
-          'أنت Gemini AI داخل تطبيق DR MALEK ALROMIMAH DENTAL. أجب بالعربية افتراضياً، وبأسلوب علمي واضح. ساعد طبيب الأسنان في البحث والتفكير السريري والتعليم، واذكر حدود المعلومات وضرورة الرجوع للمراجع والبروتوكولات الرسمية عند القرارات العلاجية.',
+          'أنت Gemini AI داخل تطبيق DR MALEK ALROMIMAH DENTAL. أجب بالعربية افتراضياً وبأسلوب علمي واضح. ساعد طبيب الأسنان في البحث والتفكير السريري والتعليم. لا تقدّم تشخيصاً أو وصفة كبديل عن الطبيب، واذكر ضرورة الرجوع إلى المراجع والبروتوكولات الرسمية عند القرارات العلاجية.',
         ),
       );
       _chat = _model!.startChat();
@@ -23,13 +25,13 @@ class DentalAiService {
   Future<String?> askDentalQuestion(String prompt) async {
     if (prompt.trim().isEmpty) return 'اكتب سؤالك أولاً.';
     if (_chat == null) {
-      return 'لم يتم تفعيل اتصال Gemini بعد. أضف GEMINI_API_KEY إلى GitHub Secrets ثم أعد بناء APK.';
+      return 'لم يتم تفعيل Gemini API. تأكد من وجود GEMINI_API_KEY في GitHub Secrets ثم أعد بناء التطبيق.';
     }
     try {
       final response = await _chat!.sendMessage(Content.text(prompt.trim()));
       return response.text ?? 'لم يصل نص من Gemini.';
     } catch (e) {
-      return 'تعذر الاتصال بـ Gemini حالياً. تحقق من الإنترنت ومفتاح API.\n$e';
+      return 'تعذر الاتصال بـ Gemini حالياً. تحقق من الإنترنت ومفتاح API وصلاحية المشروع في Google AI Studio.\n$e';
     }
   }
 }
