@@ -17,8 +17,17 @@ class App extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         locale: const Locale('ar', 'YE'),
         supportedLocales: const [Locale('ar', 'YE'), Locale('en', 'US')],
-        localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
-        theme: ThemeData(useMaterial3: true, brightness: Brightness.dark, scaffoldBackgroundColor: C.burgundy, colorScheme: ColorScheme.fromSeed(seedColor: C.gold, brightness: Brightness.dark)),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: C.burgundy,
+          colorScheme: ColorScheme.fromSeed(seedColor: C.gold, brightness: Brightness.dark),
+        ),
         home: const Shell(),
       );
 }
@@ -54,24 +63,36 @@ class _ShellState extends State<Shell> {
   @override
   void initState() {
     super.initState();
-    clock = Timer.periodic(const Duration(seconds: 1), (_) { if (mounted) setState(() {}); });
+    clock = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
     sync();
     loadNews();
   }
 
   @override
-  void dispose() { clock?.cancel(); search.dispose(); super.dispose(); }
+  void dispose() {
+    clock?.cancel();
+    search.dispose();
+    super.dispose();
+  }
 
   Future<void> sync() async {
     final t = await web.fetchGoogleUtc();
     if (!mounted) return;
-    setState(() { utc = t; syncedAt = t == null ? null : DateTime.now().toUtc(); });
+    setState(() {
+      utc = t;
+      syncedAt = t == null ? null : DateTime.now().toUtc();
+    });
   }
 
   Future<void> loadNews() async {
     if (mounted) setState(() => loadingNews = true);
     final n = await web.fetchDentalNews();
-    if (mounted) setState(() { news = n; loadingNews = false; });
+    if (mounted) setState(() {
+      news = n;
+      loadingNews = false;
+    });
   }
 
   Future<void> google() async {
@@ -79,13 +100,41 @@ class _ShellState extends State<Shell> {
     if (q.isNotEmpty) await web.openGoogleSearch(q);
   }
 
-  Future<void> deepWeb() async {
-    await web.openDeepWebSearch(search.text);
+  Future<void> deepWeb() async => web.openDeepWebSearch(search.text);
+  Future<void> darkWeb() async => web.openDarkWebSearch(search.text);
+
+  Future<void> featureSearch(String title, String query) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: C.panel,
+        title: Text(title, textDirection: TextDirection.rtl, style: const TextStyle(color: C.cream, fontWeight: FontWeight.w900)),
+        content: Text('اختر محرك البحث الذي تريد استخدامه لهذا القسم:', textDirection: TextDirection.rtl, style: const TextStyle(color: Colors.white70)),
+        actions: [
+          _engineAction(dialogContext, 'Google', Icons.search, () => web.openGoogleSearch(query)),
+          _engineAction(dialogContext, 'Deep Web', Icons.travel_explore, () => web.openDeepWebSearch(query)),
+          _engineAction(dialogContext, 'Dark Web', Icons.security, () => web.openDarkWebSearch(query)),
+        ],
+      ),
+    );
   }
 
-  Future<void> darkWeb() async {
-    await web.openDarkWebSearch(search.text);
-  }
+  Widget _engineAction(BuildContext dialogContext, String label, IconData icon, Future<void> Function() action) =>
+      Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await action();
+            },
+            icon: Icon(icon, color: C.gold),
+            label: Text(label, style: const TextStyle(color: C.cream, fontWeight: FontWeight.w800)),
+            style: OutlinedButton.styleFrom(side: const BorderSide(color: C.rose)),
+          ),
+        ),
+      );
 
   Future<void> ask(String q) async {
     if (q.trim().isEmpty) return;
@@ -98,7 +147,9 @@ class _ShellState extends State<Shell> {
       builder: (_) => AlertDialog(
         backgroundColor: C.panel,
         title: const Text('Gemini AI'),
-        content: SingleChildScrollView(child: Text(a ?? 'لا توجد إجابة', textDirection: TextDirection.rtl, style: const TextStyle(height: 1.6))),
+        content: SingleChildScrollView(
+          child: Text(a ?? 'لا توجد إجابة', textDirection: TextDirection.rtl, style: const TextStyle(height: 1.6)),
+        ),
         actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('إغلاق'))],
       ),
     );
@@ -151,7 +202,7 @@ class _ShellState extends State<Shell> {
         const Text('Deep Web: مصادر أكاديمية ومواقع غير مفهرسة عادةً • Dark Web: بحث Ahmia في خدمات Tor العامة', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 10)),
       ]);
 
-  Widget searchEngineButton(String title, IconData icon, VoidCallback action) => OutlinedButton.icon(
+  Widget searchEngineButton(String title, IconData icon, Future<void> Function() action) => OutlinedButton.icon(
         onPressed: action,
         icon: Icon(icon, size: 19, color: C.gold),
         label: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w800, color: C.cream)),
@@ -161,7 +212,10 @@ class _ShellState extends State<Shell> {
   Widget home() => RefreshIndicator(
         onRefresh: () async { await sync(); await loadNews(); },
         child: ListView(padding: const EdgeInsets.all(14), children: [
-          header(), const SizedBox(height: 12), searchBox(), const SizedBox(height: 14),
+          header(),
+          const SizedBox(height: 12),
+          searchBox(),
+          const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(30), gradient: const LinearGradient(colors: [C.burgundy2, C.panel2]), border: Border.all(color: C.gold), boxShadow: const [BoxShadow(color: Color(0x66300A14), blurRadius: 24)]),
@@ -173,8 +227,15 @@ class _ShellState extends State<Shell> {
               FilledButton.icon(onPressed: () => setState(() => tab = 2), icon: const Icon(Icons.auto_awesome), label: const Text('بدء استشارة سريرية مع Gemini AI'), style: FilledButton.styleFrom(backgroundColor: C.rose, foregroundColor: C.cream)),
             ]),
           ),
-          const SizedBox(height: 12), timeCard(), const SizedBox(height: 16),
-          Row(children: [feature('المنح\nالدراسية', Icons.school, 4), feature('آخر الأخبار', Icons.folder, 3), feature('الاستشارة\nالذكية', Icons.health_and_safety, 2), feature('المكتبة\nالرقمية', Icons.menu_book, 1)]),
+          const SizedBox(height: 12),
+          timeCard(),
+          const SizedBox(height: 16),
+          Row(children: [
+            feature('المنح\nالدراسية', Icons.school, 'منح دراسية عليا في طب الأسنان والإدارة والتسويق ونظم المعلومات'),
+            feature('آخر الأخبار', Icons.folder, 'آخر أخبار طب الأسنان في اليمن والعالم'),
+            feature('الاستشارة\nالذكية', Icons.health_and_safety, 'استشارات ومواضيع طب الأسنان والذكاء الاصطناعي'),
+            feature('المكتبة\nالرقمية', Icons.menu_book, 'أبحاث ومراجع ومصادر المكتبة الرقمية لطب الأسنان'),
+          ]),
           const SizedBox(height: 18),
           Row(children: [const Expanded(child: Text('أحدث المستندات والأخبار', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: C.cream))), TextButton(onPressed: () => setState(() => tab = 3), child: const Text('عرض الكل'))]),
           if (loadingNews) const Center(child: CircularProgressIndicator()) else ...news.take(3).map(newsTile),
@@ -189,7 +250,7 @@ class _ShellState extends State<Shell> {
     return Container(padding: const EdgeInsets.all(15), decoration: glass(), child: Row(children: [bubble(Icons.schedule), const SizedBox(width: 10), const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('الوقت العالمي المتزامن', style: TextStyle(fontWeight: FontWeight.w900, color: C.cream)), Text('مصدر الوقت: Google • UTC+03 اليمن', style: TextStyle(color: Colors.white60, fontSize: 11))])), Text('${z(t.hour)}:${z(t.minute)}:${z(t.second)}', style: const TextStyle(color: C.gold, fontSize: 23, fontWeight: FontWeight.w900))]));
   }
 
-  Widget feature(String title, IconData icon, int to) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: InkWell(onTap: () => setState(() => tab = to), borderRadius: BorderRadius.circular(22), child: Container(height: 125, decoration: glass(22), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 42, color: C.gold), const SizedBox(height: 7), Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: C.cream))])))));
+  Widget feature(String title, IconData icon, String query) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: InkWell(onTap: () => featureSearch(title.replaceAll('\n', ' '), query), borderRadius: BorderRadius.circular(22), child: Container(height: 125, decoration: glass(22), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 42, color: C.gold), const SizedBox(height: 7), Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: C.cream))])))));
   Widget newsTile(NewsItem n) => Card(color: C.panel, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)), child: ListTile(onTap: () => web.openUrl(n.link), leading: const Icon(Icons.article, color: C.gold), title: Text(n.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, color: C.cream)), subtitle: Text('${n.source} • ${n.date}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white60)), trailing: const Icon(Icons.open_in_new, color: C.gold)));
 
   Widget library() => SimplePage(title: 'المكتبة الرقمية العالمية', subtitle: 'بحث مباشر في PubMed، مع وصول سريع إلى Google Scholar وWHO وFDI.', body: const LibraryBody());
@@ -202,14 +263,19 @@ class _ShellState extends State<Shell> {
 }
 
 class SimplePage extends StatelessWidget {
-  final String title, subtitle; final Widget body;
+  final String title, subtitle;
+  final Widget body;
   const SimplePage({super.key, required this.title, required this.subtitle, required this.body});
-  @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [Text(title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: C.cream)), const SizedBox(height: 6), Text(subtitle, style: const TextStyle(color: Colors.white70)), const SizedBox(height: 14), body]);
+  @override
+  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [Text(title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: C.cream)), const SizedBox(height: 6), Text(subtitle, style: const TextStyle(color: Colors.white70)), const SizedBox(height: 14), body]);
 }
 
 class LibraryBody extends StatefulWidget { const LibraryBody({super.key}); @override State<LibraryBody> createState() => _LibraryBodyState(); }
 class _LibraryBodyState extends State<LibraryBody> {
-  final q = TextEditingController(text: 'dentistry'); final web = WebServices(); List<LibraryItem> items = []; bool loading = false;
+  final q = TextEditingController(text: 'dentistry');
+  final web = WebServices();
+  List<LibraryItem> items = [];
+  bool loading = false;
   @override void initState() { super.initState(); run(); }
   Future<void> run() async { setState(() => loading = true); final x = await web.searchPubMed(q.text); if (mounted) setState(() { items = x; loading = false; }); }
   @override void dispose() { q.dispose(); super.dispose(); }
@@ -218,8 +284,21 @@ class _LibraryBodyState extends State<LibraryBody> {
 }
 
 class AiBody extends StatefulWidget { final DentalAiService ai; final bool loading; final Future<void> Function(String) onAsk; const AiBody({super.key, required this.ai, required this.loading, required this.onAsk}); @override State<AiBody> createState() => _AiBodyState(); }
-class _AiBodyState extends State<AiBody> { final c = TextEditingController(); @override void dispose() { c.dispose(); super.dispose(); } @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [const Text('Gemini AI', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: C.cream)), const Text('اتصال حقيقي إلى Gemini API باستخدام مفتاح GEMINI_API_KEY في GitHub Secrets.', style: TextStyle(color: Colors.white70)), const SizedBox(height: 14), Wrap(spacing: 6, children: ['زراعة الأسنان الفورية', 'ألم العصب الحاد', 'خطة علاج اللثة', 'تجميل الأسنان'].map((s) => ActionChip(label: Text(s), onPressed: () { c.text = s; setState(() {}); })).toList()), const SizedBox(height: 12), TextField(controller: c, minLines: 4, maxLines: 8, decoration: InputDecoration(hintText: 'اكتب سؤالك كما في Gemini...', filled: true, fillColor: C.panel, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)))), const SizedBox(height: 12), FilledButton.icon(onPressed: widget.loading ? null : () => widget.onAsk(c.text), icon: const Icon(Icons.auto_awesome), label: Text(widget.loading ? 'جاري الاتصال...' : 'اسأل Gemini الآن'), style: FilledButton.styleFrom(backgroundColor: C.rose, foregroundColor: C.cream)), const SizedBox(height: 10), const Text('للاستخدام الطبي: راجع المراجع الرسمية والبروتوكولات المحلية قبل اتخاذ قرار علاجي.', style: TextStyle(color: Colors.white54, fontSize: 12))]); }
+class _AiBodyState extends State<AiBody> {
+  final c = TextEditingController();
+  @override void dispose() { c.dispose(); super.dispose(); }
+  @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [const Text('Gemini AI', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: C.cream)), const Text('اتصال حقيقي إلى Gemini API باستخدام مفتاح GEMINI_API_KEY في GitHub Secrets.', style: TextStyle(color: Colors.white70)), const SizedBox(height: 14), Wrap(spacing: 6, children: ['زراعة الأسنان الفورية', 'ألم العصب الحاد', 'خطة علاج اللثة', 'تجميل الأسنان'].map((s) => ActionChip(label: Text(s), onPressed: () { c.text = s; setState(() {}); })).toList()), const SizedBox(height: 12), TextField(controller: c, minLines: 4, maxLines: 8, decoration: InputDecoration(hintText: 'اكتب سؤالك كما في Gemini...', filled: true, fillColor: C.panel, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)))), const SizedBox(height: 12), FilledButton.icon(onPressed: widget.loading ? null : () => widget.onAsk(c.text), icon: const Icon(Icons.auto_awesome), label: Text(widget.loading ? 'جاري الاتصال...' : 'اسأل Gemini الآن'), style: FilledButton.styleFrom(backgroundColor: C.rose, foregroundColor: C.cream)), const SizedBox(height: 10), const Text('للاستخدام الطبي: راجع المراجع الرسمية والبروتوكولات المحلية قبل اتخاذ قرار علاجي.', style: TextStyle(color: Colors.white54, fontSize: 12))]);
+}
 
-class NewsBody extends StatelessWidget { final WebServices web; final List<NewsItem> items; final bool loading; final Future<void> Function() onRefresh; const NewsBody({super.key, required this.web, required this.items, required this.loading, required this.onRefresh}); @override Widget build(BuildContext context) => Column(children: [Align(alignment: Alignment.centerLeft, child: IconButton(onPressed: onRefresh, icon: const Icon(Icons.refresh, color: C.gold))), if (loading) const CircularProgressIndicator() else ...items.map((n) => Card(color: C.panel, child: ListTile(onTap: () => web.openUrl(n.link), leading: const Icon(Icons.article, color: C.gold), title: Text(n.title, maxLines: 2, overflow: TextOverflow.ellipsis), subtitle: Text('${n.source} • ${n.date}', style: const TextStyle(color: Colors.white60)), trailing: const Icon(Icons.open_in_new, color: C.gold)))), FilledButton.icon(onPressed: () => web.openGoogleSearch('طب الأسنان اليمن اخبار'), icon: const Icon(Icons.travel_explore), label: const Text('أخبار طب الأسنان في اليمن على Google'), style: FilledButton.styleFrom(backgroundColor: C.rose, foregroundColor: C.cream))]); }
+class NewsBody extends StatelessWidget {
+  final WebServices web; final List<NewsItem> items; final bool loading; final Future<void> Function() onRefresh;
+  const NewsBody({super.key, required this.web, required this.items, required this.loading, required this.onRefresh});
+  @override Widget build(BuildContext context) => Column(children: [Align(alignment: Alignment.centerLeft, child: IconButton(onPressed: onRefresh, icon: const Icon(Icons.refresh, color: C.gold))), if (loading) const CircularProgressIndicator() else ...items.map((n) => Card(color: C.panel, child: ListTile(onTap: () => web.openUrl(n.link), leading: const Icon(Icons.article, color: C.gold), title: Text(n.title, maxLines: 2, overflow: TextOverflow.ellipsis), subtitle: Text('${n.source} • ${n.date}', style: const TextStyle(color: Colors.white60)), trailing: const Icon(Icons.open_in_new, color: C.gold)))), FilledButton.icon(onPressed: () => web.openGoogleSearch('طب الأسنان اليمن اخبار'), icon: const Icon(Icons.travel_explore), label: const Text('أخبار طب الأسنان في اليمن على Google'), style: FilledButton.styleFrom(backgroundColor: C.rose, foregroundColor: C.cream))]);
+}
 
-class ScholarBody extends StatelessWidget { final WebServices web; const ScholarBody({super.key, required this.web}); @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [const Text('المنح الدراسية', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: C.cream)), const Text('بحث حي في الويب عن منح مجانية وممولة في طب الأسنان والإدارة والتسويق ونظم المعلومات.', style: TextStyle(color: Colors.white70)), const SizedBox(height: 12), ...['dentistry fully funded scholarships 2026', 'business administration fully funded scholarships 2026', 'marketing fully funded scholarships 2026', 'information systems fully funded scholarships 2026'].map((q) => Card(color: C.panel, child: ListTile(title: Text(q), trailing: IconButton(onPressed: () => web.openGoogleSearch(q), icon: const Icon(Icons.search, color: C.gold))))), const SizedBox(height: 10), const Text('بوابات موثوقة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: C.cream)), Wrap(spacing: 6, children: [p('Erasmus Mundus', 'https://erasmus-plus.ec.europa.eu/'), p('DAAD', 'https://www.daad.de/en/'), p('Chevening', 'https://www.chevening.org/'), p('Fulbright', 'https://foreign.fulbrightonline.org/'), p('Study in Saudi', 'https://studyinsaudi.moe.gov.sa/')])]); Widget p(String s, String u) => ActionChip(label: Text(s), onPressed: () => web.openUrl(u)); }
+class ScholarBody extends StatelessWidget {
+  final WebServices web;
+  const ScholarBody({super.key, required this.web});
+  @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [const Text('المنح الدراسية', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: C.cream)), const Text('بحث حي في الويب عن منح مجانية وممولة في طب الأسنان والإدارة والتسويق ونظم المعلومات.', style: TextStyle(color: Colors.white70)), const SizedBox(height: 12), ...['dentistry fully funded scholarships 2026', 'business administration fully funded scholarships 2026', 'marketing fully funded scholarships 2026', 'information systems fully funded scholarships 2026'].map((q) => Card(color: C.panel, child: ListTile(title: Text(q), trailing: IconButton(onPressed: () => web.openGoogleSearch(q), icon: const Icon(Icons.search, color: C.gold))))), const SizedBox(height: 10), const Text('بوابات موثوقة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: C.cream)), Wrap(spacing: 6, children: [p('Erasmus Mundus', 'https://erasmus-plus.ec.europa.eu/'), p('DAAD', 'https://www.daad.de/en/'), p('Chevening', 'https://www.chevening.org/'), p('Fulbright', 'https://foreign.fulbrightonline.org/'), p('Study in Saudi', 'https://studyinsaudi.moe.gov.sa/')])]);
+  Widget p(String s, String u) => ActionChip(label: Text(s), onPressed: () => web.openUrl(u));
+}
