@@ -30,9 +30,32 @@ class WebServices {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  // Deep Web: searches sources that are not normally surfaced by a plain
+  // Google query, while staying on the public web (PubMed/WHO/FDI/Scholar).
+  Future<void> openDeepWebSearch(String query) async {
+    final q = query.trim().isEmpty ? 'dentistry oral health' : query.trim();
+    final encoded = Uri.encodeQueryComponent(q);
+    final uri = Uri.parse(
+      'https://www.google.com/search?q=$encoded+site%3Apubmed.ncbi.nlm.nih.gov+OR+site%3Awho.int+OR+site%3Afdiworlddental.org+OR+site%3Ascholar.google.com',
+    );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  // Dark Web: use Ahmia, a real public search engine that indexes publicly
+  // accessible Tor (.onion) services. The app does not implement a Tor proxy
+  // itself; opening an .onion result requires a Tor-capable browser.
+  Future<void> openDarkWebSearch(String query) async {
+    final q = query.trim().isEmpty ? 'dentistry' : query.trim();
+    final uri = Uri.https('ahmia.fi', '/search/', {'q': q});
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   Future<DateTime?> fetchGoogleUtc() async {
     try {
-      final response = await http.get(Uri.parse('https://www.google.com/generate_204'), headers: const {'Cache-Control': 'no-cache'}).timeout(const Duration(seconds: 8));
+      final response = await http.get(
+        Uri.parse('https://www.google.com/generate_204'),
+        headers: const {'Cache-Control': 'no-cache'},
+      ).timeout(const Duration(seconds: 8));
       final value = response.headers['date'];
       if (value == null) return null;
       return HttpDate.parse(value).toUtc();
@@ -76,23 +99,37 @@ class WebServices {
     return match?.group(1)?.trim() ?? '';
   }
 
-  String _decode(String value) => value.replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll(RegExp(r'<[^>]+>'), '');
+  String _decode(String value) => value
+      .replaceAll('&amp;', '&')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll(RegExp(r'<[^>]+>'), '');
 
   Future<List<LibraryItem>> searchPubMed(String query) async {
     final clean = query.trim().isEmpty ? 'dentistry' : query.trim();
     try {
-      final searchUri = Uri.https('eutils.ncbi.nlm.nih.gov', '/entrez/eutils/esearch.fcgi', {'db': 'pubmed', 'term': clean, 'retmode': 'json', 'retmax': '12', 'sort': 'pub_date'});
+      final searchUri = Uri.https('eutils.ncbi.nlm.nih.gov', '/entrez/eutils/esearch.fcgi', {
+        'db': 'pubmed', 'term': clean, 'retmode': 'json', 'retmax': '12', 'sort': 'pub_date',
+      });
       final searchResponse = await http.get(searchUri).timeout(const Duration(seconds: 12));
       if (searchResponse.statusCode != 200) return [];
       final ids = (jsonDecode(searchResponse.body)['esearchresult']['idlist'] as List).cast<String>();
       if (ids.isEmpty) return [];
-      final summaryUri = Uri.https('eutils.ncbi.nlm.nih.gov', '/entrez/eutils/esummary.fcgi', {'db': 'pubmed', 'id': ids.join(','), 'retmode': 'json'});
+      final summaryUri = Uri.https('eutils.ncbi.nlm.nih.gov', '/entrez/eutils/esummary.fcgi', {
+        'db': 'pubmed', 'id': ids.join(','), 'retmode': 'json',
+      });
       final summaryResponse = await http.get(summaryUri).timeout(const Duration(seconds: 12));
       if (summaryResponse.statusCode != 200) return [];
       final result = jsonDecode(summaryResponse.body)['result'] as Map<String, dynamic>;
       return ids.map((id) {
         final row = result[id] as Map<String, dynamic>? ?? {};
-        return LibraryItem(title: (row['title'] ?? 'PubMed article').toString(), journal: (row['fulljournalname'] ?? row['source'] ?? 'PubMed').toString(), link: 'https://pubmed.ncbi.nlm.nih.gov/$id/');
+        return LibraryItem(
+          title: (row['title'] ?? 'PubMed article').toString(),
+          journal: (row['fulljournalname'] ?? row['source'] ?? 'PubMed').toString(),
+          link: 'https://pubmed.ncbi.nlm.nih.gov/$id/',
+        );
       }).toList();
     } catch (_) {
       return [];
